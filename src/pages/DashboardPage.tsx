@@ -52,6 +52,7 @@ export function DashboardPage({
     });
   }, [sortedOrders]);
 
+  // NOTE: leaving some variable names as `order` until we decide to move this demo app to separate repo
   const pastOrders = useMemo(() => {
     const today = new Date();
     return sortedOrders.filter((order) => {
