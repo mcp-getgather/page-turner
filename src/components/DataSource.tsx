@@ -76,6 +76,22 @@ export function DataSource({
     await loadBookData();
   };
 
+  // NOTE: temporary solution until we fix in the mcp, related to https://github.com/mcp-getgather/mcp-getgather/pull/411/files#diff-6c7ad2429ff4f85d533ff32dc0d8328605a8dc6d12d47b8eb9d7351b3626362cR421
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const extractBookListFromResponse = (
+    structuredContent: Record<string, any>
+  ) => {
+    const bookList =
+      structuredContent[brandConfig.dataTransform.dataPath]?.[0]?.terminated !=
+      null
+        ? structuredContent[brandConfig.dataTransform.dataPath]?.[0]?.result
+        : structuredContent[brandConfig.dataTransform.dataPath];
+    return {
+      ...structuredContent,
+      [brandConfig.dataTransform.dataPath]: bookList,
+    };
+  };
+
   const loadBookData = async () => {
     // Start data loading - step 3
     onProgressStep?.(3);
@@ -84,7 +100,7 @@ export function DataSource({
     console.log('Structured content (after auth):', structuredContent);
 
     setIsLoading(false);
-    handleSuccessConnect(structuredContent);
+    handleSuccessConnect(extractBookListFromResponse(structuredContent));
   };
 
   const handleConnect = async () => {
@@ -99,7 +115,7 @@ export function DataSource({
         await handleAuthentication(structuredContent);
       } else {
         setIsLoading(false);
-        handleSuccessConnect(structuredContent);
+        handleSuccessConnect(extractBookListFromResponse(structuredContent));
       }
     } catch (error) {
       console.error('Connection error:', error);
