@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import type { PurchaseHistory } from '../modules/DataTransformSchema';
-import circuitShackLogo from '../assets/circuit-shack-logo.svg';
+import type { ReadingHistory } from '../modules/DataTransformSchema';
+import pageTurnerLogo from '../assets/page-turner-logo.svg';
 
 type DashboardPageProps = {
-  orders: PurchaseHistory[];
+  orders: ReadingHistory[];
   onRetryConnection?: () => void;
   onConnectAnother?: () => void;
   isEmpty?: boolean;
@@ -24,13 +24,13 @@ export function DashboardPage({
   const sortedOrders = useMemo(() => {
     return orders.sort((a, b) => {
       const dateA =
-        typeof a.order_date === 'string'
-          ? parseOrderDate(a.order_date)
-          : new Date(a.order_date ?? new Date());
+        typeof a.reading_date === 'string'
+          ? parseOrderDate(a.reading_date)
+          : new Date(a.reading_date ?? new Date());
       const dateB =
-        typeof b.order_date === 'string'
-          ? parseOrderDate(b.order_date)
-          : new Date(b.order_date ?? new Date());
+        typeof b.reading_date === 'string'
+          ? parseOrderDate(b.reading_date)
+          : new Date(b.reading_date ?? new Date());
       return dateB.getTime() - dateA.getTime();
     });
   }, [orders]);
@@ -39,11 +39,11 @@ export function DashboardPage({
   const upcomingDeliveries = useMemo(() => {
     const today = new Date();
     return sortedOrders.filter((order) => {
-      if (!order.order_date) return false;
+      if (!order.reading_date) return false;
       const orderDate =
-        typeof order.order_date === 'string'
-          ? parseOrderDate(order.order_date)
-          : new Date(order.order_date);
+        typeof order.reading_date === 'string'
+          ? parseOrderDate(order.reading_date)
+          : new Date(order.reading_date);
       const daysSinceOrder = Math.floor(
         (today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -55,11 +55,11 @@ export function DashboardPage({
   const pastOrders = useMemo(() => {
     const today = new Date();
     return sortedOrders.filter((order) => {
-      if (!order.order_date) return true;
+      if (!order.reading_date) return true;
       const orderDate =
-        typeof order.order_date === 'string'
-          ? parseOrderDate(order.order_date)
-          : new Date(order.order_date);
+        typeof order.reading_date === 'string'
+          ? parseOrderDate(order.reading_date)
+          : new Date(order.reading_date);
       const daysSinceOrder = Math.floor(
         (today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -68,12 +68,12 @@ export function DashboardPage({
     });
   }, [sortedOrders]);
 
-  const getOrderStatus = (order: PurchaseHistory) => {
-    if (!order.order_date) return 'Processing';
+  const getOrderStatus = (order: ReadingHistory) => {
+    if (!order.reading_date) return 'Processing';
     const orderDate =
-      typeof order.order_date === 'string'
-        ? parseOrderDate(order.order_date)
-        : new Date(order.order_date);
+      typeof order.reading_date === 'string'
+        ? parseOrderDate(order.reading_date)
+        : new Date(order.reading_date);
     const today = new Date();
     const daysSinceOrder = Math.floor(
       (today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -97,19 +97,19 @@ export function DashboardPage({
     }
   };
 
-  const renderOrderCard = (order: PurchaseHistory, index: number) => {
+  const renderOrderCard = (order: ReadingHistory, index: number) => {
     const status = getOrderStatus(order);
     const orderDate =
-      typeof order.order_date === 'string'
-        ? parseOrderDate(order.order_date)
-        : new Date(order.order_date || new Date());
+      typeof order.reading_date === 'string'
+        ? parseOrderDate(order.reading_date)
+        : new Date(order.reading_date || new Date());
     const deliveryDate = new Date(
       orderDate.getTime() + 7 * 24 * 60 * 60 * 1000
     );
 
     // Handle both string and array types for product_names and image_urls
-    const productName = order.product_name;
-    const imageUrl = order.product_image;
+    const productName = order.title;
+    const imageUrl = order.cover;
 
     return (
       <div
@@ -126,9 +126,9 @@ export function DashboardPage({
 
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-gray-900 line-clamp-2">
-            {productName || 'Unknown Product'}
+            {productName || 'Unknown Book'}
           </h3>
-          <p className="text-sm text-gray-600 mt-1">From Amazon</p>
+          <p className="text-sm text-gray-600 mt-1">From Goodreads</p>
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -138,42 +138,26 @@ export function DashboardPage({
                   clipRule="evenodd"
                 />
               </svg>
-              Ordered: {orderDate.toLocaleDateString()}
+              Added: {orderDate.toLocaleDateString()}
             </div>
             <div className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z" />
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
               </svg>
-              Delivery: {deliveryDate.toLocaleDateString()}
-            </div>
-            <div className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.817 14.769 2.156 18 4.828 18h10.343c2.673 0 4.012-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a1.993 1.993 0 00-.114-.035l1.063-1.063A3 3 0 009 8.172z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Electronics
+              {order.rating}
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(status)}`}
-          >
-            {status}
-          </span>
-          {order.product_url && (
+          {order.url && (
             <a
-              href={`https://amazon.com${order.product_url}`}
+              href={`https://goodreads.com${order.url}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-800 text-sm font-medium"
             >
-              View Product
+              View Book
             </a>
           )}
         </div>
@@ -187,30 +171,18 @@ export function DashboardPage({
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8 text-center">
           <div className="flex items-center justify-center mb-6">
-            <div className="w-8 h-8 mr-3">
-              <img
-                src={circuitShackLogo}
-                alt="Circuit Shack"
-                className="w-full h-full"
-              />
-            </div>
-            <span
-              className="text-xl font-bold text-blue-600"
-              style={{ textDecoration: 'underline' }}
-            >
-              CIRCUIT SHACK
-            </span>
+            <img src={pageTurnerLogo} alt="PageTurner" className="h-8" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-            Thanks for linking your Amazon Account!
+            Thanks for connecting your reading accounts!
           </h1>
 
           {/* Confirmation Section */}
           {!isEmpty && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
               <p className="text-blue-700 mb-4">
-                Almost there! Confirm sharing the electronics purchases below
-                with Circuit Shack to claim your $50
+                Almost there! Confirm sharing your reading list below with
+                PageTurner to claim your $50
               </p>
               <button className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 transition-colors">
                 Confirm
@@ -231,12 +203,12 @@ export function DashboardPage({
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No Electronics Orders Found
+                No Books Found
               </h3>
               <p className="text-gray-600 mb-6">
-                We couldn't find any electronics purchases in your Amazon
-                account. This might be because you haven't made any electronics
-                purchases recently, or they might be in a different account.
+                We couldn't find any books in your connected accounts. This
+                might be because you haven't added any books recently, or they
+                might be in a different account.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
@@ -261,13 +233,13 @@ export function DashboardPage({
       {!isEmpty && (
         <div className="max-w-4xl mx-auto px-6 py-8">
           <h2 className="text-xl font-bold text-gray-900 mb-8">
-            Your Electronics Orders
+            Your Reading List
           </h2>
 
           {/* Upcoming Deliveries */}
           <div className="mb-12">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Upcoming Deliveries ({upcomingDeliveries.length})
+              Currently Reading ({upcomingDeliveries.length})
             </h3>
             <div className="space-y-4">
               {upcomingDeliveries.length > 0 ? (
@@ -276,7 +248,7 @@ export function DashboardPage({
                 )
               ) : (
                 <p className="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-200">
-                  No upcoming deliveries
+                  No books currently being read
                 </p>
               )}
             </div>
@@ -285,14 +257,14 @@ export function DashboardPage({
           {/* Past Orders */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Past Orders ({pastOrders.length})
+              Reading History ({pastOrders.length})
             </h3>
             <div className="space-y-4">
               {pastOrders.length > 0 ? (
                 pastOrders.map((order, index) => renderOrderCard(order, index))
               ) : (
                 <p className="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-200">
-                  No past orders to display
+                  No reading history to display
                 </p>
               )}
             </div>

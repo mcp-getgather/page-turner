@@ -82,7 +82,7 @@ export function LoadingPage({
       case 2:
         return 'Waiting for authentication...';
       case 3:
-        return 'Loading order history...';
+        return 'Loading book history...';
       case 4:
         return 'Almost done...';
       default:

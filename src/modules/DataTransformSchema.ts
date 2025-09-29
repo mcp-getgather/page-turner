@@ -4,6 +4,7 @@ export type ReadingHistory = {
   cover: string;
   author: string;
   rating: string;
+  reading_date?: Date | string;
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

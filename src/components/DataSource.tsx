@@ -73,10 +73,10 @@ export function DataSource({
     }
 
     onAuthComplete?.();
-    await loadPurchaseData();
+    await loadBookData();
   };
 
-  const loadPurchaseData = async () => {
+  const loadBookData = async () => {
     // Start data loading - step 3
     onProgressStep?.(3);
 
