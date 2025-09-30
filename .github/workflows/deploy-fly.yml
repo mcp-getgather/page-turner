@@ -4,7 +4,7 @@ name: Fly Deploy
 on:
   push:
     branches:
-      - main
+      - page-turner
 jobs:
   deploy:
     name: Deploy app
