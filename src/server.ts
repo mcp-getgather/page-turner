@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const KEYWORDS = ['electronics'];
+const KEYWORDS: string[] = [];
 
 function getAppHost(req: express.Request): string {
   // If APP_HOST is explicitly set, use it
