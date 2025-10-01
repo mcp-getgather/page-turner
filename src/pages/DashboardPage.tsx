@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import type { ReadingHistory } from '../modules/DataTransformSchema';
+import type { Book } from '../modules/DataTransformSchema';
 import pageTurnerLogo from '../assets/page-turner-logo.svg';
 
 type DashboardPageProps = {
-  orders: ReadingHistory[];
+  orders: Book[];
   onRetryConnection?: () => void;
   onConnectAnother?: () => void;
   isEmpty?: boolean;
@@ -15,98 +15,45 @@ export function DashboardPage({
   onConnectAnother,
   isEmpty = false,
 }: DashboardPageProps) {
-  const parseOrderDate = (dateString: string) => {
+  const parseDate = (dateString: string) => {
     // Extract date from "Ordered on July 22, 2024" format
     const match = dateString.match(/Ordered on (.+)/);
     return match ? new Date(match[1]) : new Date();
   };
 
-  const sortedOrders = useMemo(() => {
-    return orders.sort((a, b) => {
-      const dateA =
-        typeof a.reading_date === 'string'
-          ? parseOrderDate(a.reading_date)
-          : new Date(a.reading_date ?? new Date());
-      const dateB =
-        typeof b.reading_date === 'string'
-          ? parseOrderDate(b.reading_date)
-          : new Date(b.reading_date ?? new Date());
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [orders]);
+  const parseShelfName = (shelf: string) => {
+    const shelfName = shelf
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
 
-  // Categorize orders into upcoming deliveries and past orders
-  const upcomingDeliveries = useMemo(() => {
-    const today = new Date();
-    return sortedOrders.filter((order) => {
-      if (!order.reading_date) return false;
-      const orderDate =
-        typeof order.reading_date === 'string'
-          ? parseOrderDate(order.reading_date)
-          : new Date(order.reading_date);
-      const daysSinceOrder = Math.floor(
-        (today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      // Consider orders from last 30 days as upcoming/recent
-      return daysSinceOrder <= 30;
-    });
-  }, [sortedOrders]);
-
-  // NOTE: leaving some variable names as `order` until we decide to move this demo app to separate repo
-  const pastOrders = useMemo(() => {
-    const today = new Date();
-    return sortedOrders.filter((order) => {
-      if (!order.reading_date) return true;
-      const orderDate =
-        typeof order.reading_date === 'string'
-          ? parseOrderDate(order.reading_date)
-          : new Date(order.reading_date);
-      const daysSinceOrder = Math.floor(
-        (today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      // Consider orders older than 30 days as past orders
-      return daysSinceOrder > 30;
-    });
-  }, [sortedOrders]);
-
-  const getOrderStatus = (order: ReadingHistory) => {
-    if (!order.reading_date) return 'Processing';
-    const orderDate =
-      typeof order.reading_date === 'string'
-        ? parseOrderDate(order.reading_date)
-        : new Date(order.reading_date);
-    const today = new Date();
-    const daysSinceOrder = Math.floor(
-      (today.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysSinceOrder <= 1) return 'Processing';
-    if (daysSinceOrder <= 7) return 'Shipped';
-    return 'Delivered';
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Processing':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Shipped':
-        return 'bg-blue-100 text-blue-800';
-      case 'Delivered':
-        return 'bg-green-100 text-green-800';
+    switch (shelfName) {
+      case 'To Read':
+        return 'Wish to Read';
+      case 'Read':
+        return 'Reading History';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return shelfName;
     }
   };
 
-  const renderOrderCard = (order: ReadingHistory, index: number) => {
-    const status = getOrderStatus(order);
-    const orderDate =
-      typeof order.reading_date === 'string'
-        ? parseOrderDate(order.reading_date)
-        : new Date(order.reading_date || new Date());
-    const deliveryDate = new Date(
-      orderDate.getTime() + 7 * 24 * 60 * 60 * 1000
+  const shelvingBooks: Record<string, Book[]> = useMemo(() => {
+    return orders.reduce(
+      (acc, book) => {
+        acc[parseShelfName(book.shelf)] = [
+          ...(acc[parseShelfName(book.shelf)] || []),
+          book,
+        ];
+        return acc;
+      },
+      {} as Record<string, Book[]>
     );
+  }, [orders]);
+
+  const renderBookCard = (order: Book, index: number) => {
+    const addedDate =
+      typeof order.added_date === 'string'
+        ? parseDate(order.added_date)
+        : new Date(order.added_date || new Date());
 
     // Handle both string and array types for product_names and image_urls
     const productName = order.title;
@@ -139,7 +86,7 @@ export function DashboardPage({
                   clipRule="evenodd"
                 />
               </svg>
-              Added: {orderDate.toLocaleDateString()}
+              Added: {addedDate.toLocaleDateString()}
             </div>
             <div className="flex items-center gap-1">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -164,6 +111,27 @@ export function DashboardPage({
         </div>
       </div>
     );
+  };
+
+  const renderShelves = (shelves: Record<string, Book[]>) => {
+    return Object.entries(shelves).map(([shelf, books]) => {
+      return (
+        <div className="mb-12">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {shelf} ({books.length} books)
+          </h3>
+          <div className="space-y-4">
+            {books.length > 0 ? (
+              books.map((book, index) => renderBookCard(book, index))
+            ) : (
+              <p className="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-200">
+                No books in this shelf
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    });
   };
 
   return (
@@ -237,39 +205,7 @@ export function DashboardPage({
             Your Reading List
           </h2>
 
-          {/* Upcoming Deliveries */}
-          <div className="mb-12">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Currently Reading ({upcomingDeliveries.length})
-            </h3>
-            <div className="space-y-4">
-              {upcomingDeliveries.length > 0 ? (
-                upcomingDeliveries.map((order, index) =>
-                  renderOrderCard(order, index)
-                )
-              ) : (
-                <p className="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-200">
-                  No books currently being read
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Past Orders */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Reading History ({pastOrders.length})
-            </h3>
-            <div className="space-y-4">
-              {pastOrders.length > 0 ? (
-                pastOrders.map((order, index) => renderOrderCard(order, index))
-              ) : (
-                <p className="text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-200">
-                  No reading history to display
-                </p>
-              )}
-            </div>
-          </div>
+          {renderShelves(shelvingBooks)}
         </div>
       )}
     </div>

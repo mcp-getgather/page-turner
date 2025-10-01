@@ -48,6 +48,17 @@
         "outputKey": "rating",
         "sourcePath": "rating",
         "defaultValue": "N/A"
+      },
+      {
+        "outputKey": "shelf",
+        "sourcePath": "shelf",
+        "defaultValue": "read"
+      },
+      {
+        "outputKey": "added_date",
+        "sourcePath": "added_date",
+        "defaultValue": "N/A",
+        "transform": "date"
       }
     ]
   }

@@ -1,9 +1,11 @@
-export type ReadingHistory = {
+export type Book = {
   title: string;
   url: string;
   cover: string;
   author: string;
   rating: string;
+  shelf: string;
+  added_date?: Date | string;
   reading_date?: Date | string;
 };
 

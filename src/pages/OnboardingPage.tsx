@@ -1,14 +1,14 @@
 import { DataSource } from '../components/DataSource';
 import goodreads from '../config/goodreads.json';
 import type { BrandConfig } from '../modules/Config';
-import type { ReadingHistory } from '../modules/DataTransformSchema';
+import type { Book } from '../modules/DataTransformSchema';
 import pageTurnerLogo from '../assets/page-turner-logo.svg';
 
 const goodreadsConfig = goodreads as BrandConfig;
 const BRANDS: Array<BrandConfig> = [goodreadsConfig];
 
 type OnboardingPageProps = {
-  onSuccessConnect: (data: ReadingHistory[]) => void;
+  onSuccessConnect: (data: Book[]) => void;
   onConnectStart?: () => void;
   onConnectionError?: (errorDetails: string) => void;
   onProgressStep?: (step: number) => void;

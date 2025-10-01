@@ -2,13 +2,13 @@ import { useState } from 'react';
 import type { BrandConfig } from '../modules/Config';
 import {
   transformData,
-  type ReadingHistory,
+  type Book,
 } from '../modules/DataTransformSchema';
 import { apiClient } from '../api';
 import * as Sentry from '@sentry/react';
 
 interface DataSourceProps {
-  onSuccessConnect: (data: ReadingHistory[]) => void;
+  onSuccessConnect: (data: Book[]) => void;
   onConnectStart?: () => void;
   onConnectionError?: (errorDetails: string) => void;
   onProgressStep?: (step: number) => void;
@@ -34,7 +34,7 @@ export function DataSource({
     const transformedData = transformData(data, brandConfig.dataTransform);
     console.log('Transformed purchase history:', transformedData);
     setIsLoading(false);
-    onSuccessConnect(transformedData as unknown as ReadingHistory[]);
+    onSuccessConnect(transformedData as unknown as Book[]);
   };
 
   const handleAuthentication = async (structuredContent: {
