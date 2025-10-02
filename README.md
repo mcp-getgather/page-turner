@@ -1,38 +1,30 @@
-# ReturnReminder
+# Page Turner
 
-ReturnReminder is a web app that helps you track and never miss return deadlines for your online purchases from major retailers like Amazon, Wayfair, and Office Depot.
-
-**Live Demo:** https://returnreminder.com/
+Page Turner is a web app that helps you connect and import your reading lists from Goodreads, providing a unified view of all your books across different shelves.
 
 ## Features
 
-- **Connect Shopping Accounts:** Securely connect your Amazon, Wayfair, and Office Depot accounts.
-- **Automatic Import:** Instantly fetch your recent purchases and their return windows.
-- **Unified Dashboard:** View all your return deadlines in one place.
-- **Urgent Alerts:** Highlight items with return windows expiring soon.
-- **Calendar Integration:** Add reminders to Google, Apple, Outlook, or download as ICS.
+- **Connect Goodreads Account:** Securely connect your Goodreads account via a simple authentication flow.
+- **Automatic Import:** Instantly fetch your book shelves and reading history.
+- **Organized Dashboard:** View all your books organized by shelf (Reading History, Wish to Read, etc.).
+- **Book Details:** See book covers, ratings, added dates, and links back to Goodreads.
+- **Share Your Reading List:** Confirm and share your reading list to claim rewards.
 - **Privacy-Focused:** Credentials are used only for session and never stored.
 
 ## How It Works
 
-1. **Connect Accounts:** Use the dashboard to connect your retailer accounts via a secure sign-in dialog.
-2. **Import Purchases:** The app fetches your order history and return windows.
-3. **Track Deadlines:** See all your return deadlines, with urgent items highlighted.
-4. **Get Reminders:** Add reminders to your calendar or download all as an ICS file.
-
-## Supported Retailers
-
-- Amazon
-- Wayfair
-- Office Depot
-- (TODO) Nordstrom
+1. **Connect Account:** Use the onboarding flow to connect your Goodreads account via secure sign-in.
+2. **Import Books:** The app fetches your book shelves and reading history.
+3. **View Dashboard:** See all your books organized by shelf with covers and ratings.
+4. **Share & Confirm:** Confirm sharing your reading list to claim rewards.
 
 ## Technical Overview
 
-- **Frontend:** React (Vite), TypeScript, Tailwind CSS.
-- **Backend:** Express.js, geolocation via MaxMind.
-- **Data Model:** Purchases include brand, order date, products, return dates, etc.
-- **Calendar Integration:** Add reminders to Google, Apple, Outlook, or download ICS.
+- **Frontend:** React (Vite), TypeScript, Tailwind CSS, React Router.
+- **Backend:** Express.js with session management.
+- **Integration:** Goodreads account connection via secure authentication.
+- **Data Model:** Books include title, author, cover, rating, shelf, added date, and Goodreads URL.
+- **Celebrations:** Confetti animation for confirmation milestones.
 - **Error Tracking:** Sentry integration for both client and server-side error monitoring.
 
 ## Configuration
@@ -55,57 +47,3 @@ The app will work without Sentry configuration - errors will simply not be track
 npm install
 npm run dev
 ```
-
-## Deployment (Fly.io)
-
-### Prerequisites
-
-1. Install the Fly CLI: https://fly.io/docs/getting-started/installing-flyctl/
-2. Sign up for a Fly.io account: https://fly.io/app/sign-up
-
-### Deploy Steps
-
-1. **Login to Fly.io**:
-
-   ```bash
-   fly auth login
-   ```
-
-2. **Create and deploy the app**:
-
-   ```bash
-   fly launch
-   ```
-
-   This will:
-   - Create a new app on Fly.io
-   - Use the existing `fly.toml` configuration
-   - Build and deploy using the existing Dockerfile
-   - Sometimes it will update app name
-
-3. **Set up secrets**:
-
-   ```bash
-   cp .env.template .env
-   # IMPORTANT, edit .env with your actual values
-   fly secrets import < .env
-   ```
-
-4. **Deploy updates**:
-   ```bash
-   fly deploy
-   ```
-
-### Configuration
-
-The `fly.toml` file contains the deployment configuration:
-
-- **Memory**: 1GB RAM
-- **Auto-scaling**: Starts/stops machines based on traffic
-- **HTTPS**: Automatically enforced
-
-### Monitoring
-
-- **View logs**: `fly logs`
-- **Check status**: `fly status`
-- **Open in browser**: `fly open`
