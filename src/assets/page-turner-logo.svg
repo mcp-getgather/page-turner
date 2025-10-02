@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="210" viewBox="0 0 740 210" role="img" aria-labelledby="title desc">
+  <title id="title">pageturner logo</title>
+  <desc id="desc">Minimal open book with a turning page icon, followed by the word pageturner with tighter spacing.</desc>
+  <defs>
+    <style>
+      .bg{fill:#ffffff}
+      .ink{fill:#111111}
+      .stroke{stroke:#111111;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .accent{fill:#2d6cdf}
+      .word{font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; font-weight:800; letter-spacing:.2px}
+      .sub{font-weight:900}
+    </style>
+
+    <!-- Open book + turning page icon -->
+    <symbol id="pt-icon" viewBox="0 0 256 256">
+      <!-- book block -->
+      <path class="ink" d="M60 78a26 26 0 0 1 26-26h40a28 28 0 0 1 20 8 28 28 0 0 1 20-8h40a26 26 0 0 1 26 26v76a26 26 0 0 1-26 26h-40a28 28 0 0 1-20-8 28 28 0 0 1-20 8H86a26 26 0 0 1-26-26z"/>
+      <!-- page whites -->
+      <path class="bg" d="M70 84c0-8 6-14 14-14h40c10 0 18 8 18 18v68c0 10-8 18-18 18H84c-8 0-14-6-14-14z"/>
+      <path class="bg" d="M134 88c0-10 8-18 18-18h38c8 0 14 6 14 14v76c0 8-6 14-14 14h-38c-10 0-18-8-18-18z"/>
+      <!-- turning page -->
+      <path class="accent" d="M184 72c14 2 29 13 32 28 3 14-6 29-22 40-12 9-28 15-44 18 9-9 18-20 24-32 8-14 12-34 10-54z"/>
+      <!-- gutter -->
+      <path class="stroke" d="M128 88v80"/>
+    </symbol>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(0,20)">
+    <use href="#pt-icon" width="160" height="160"/>
+  </g>
+
+  <!-- Wordmark (closer to icon) -->
+  <g transform="translate(200,0)">
+    <text class="word ink" x="0" y="130" font-size="92">
+      page<tspan class="sub">turner</tspan>
+    </text>
+    <!-- underline hint -->
+    <rect class="accent" x="6" y="142" width="360" height="10" rx="5" opacity=".10"/>
+  </g>
+</svg>

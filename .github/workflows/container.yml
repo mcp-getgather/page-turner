@@ -1,0 +1,26 @@
+name: Container
+
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  container:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - run: docker build -t circuit-shack .
+
+      - run: docker run -p 3001:3001 --name circuit-shack -d circuit-shack
+        timeout-minutes: 3
+
+      - name: Run the health check validation
+        run: while ! curl -s 'http://localhost:3001/health' | grep 'ok'; do sleep 1; done
+        timeout-minutes: 3
+
+      - name: Get the container logs
+        run: docker logs --details circuit-shack
+        if: always()

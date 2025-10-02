@@ -1,0 +1,54 @@
+{
+  "brand_id": "goodreads",
+  "brand_name": "Goodreads",
+  "logo_url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Goodreads_%27g%27_logo.svg",
+  "is_mandatory": true,
+  "schema": [
+    {
+      "name": "email",
+      "type": "email",
+      "prompt": "Email"
+    },
+    {
+      "name": "password",
+      "type": "password",
+      "prompt": "Password"
+    },
+    {
+      "name": "continue,sign_in",
+      "type": "click",
+      "prompt": "Sign In",
+      "dependsOnFields": "email"
+    }
+  ],
+  "dataTransform": {
+    "dataPath": "books",
+    "fieldMappings": [
+      {
+        "outputKey": "title",
+        "sourcePath": "title",
+        "defaultValue": "N/A"
+      },
+      {
+        "outputKey": "url",
+        "sourcePath": "url",
+        "defaultValue": "N/A"
+      },
+      {
+        "outputKey": "cover",
+        "sourcePath": "cover",
+        "defaultValue": "N/A"
+      },
+      {
+        "outputKey": "author",
+        "sourcePath": "author",
+        "defaultValue": "N/A"
+      },
+      {
+        "outputKey": "rating",
+        "sourcePath": "rating",
+        "defaultValue": "N/A"
+      }
+    ]
+  }
+}
