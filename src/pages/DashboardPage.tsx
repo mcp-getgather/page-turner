@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import ReactConfetti from 'react-confetti';
 import type { Book } from '../modules/DataTransformSchema';
 import pageTurnerLogo from '../assets/page-turner-logo.svg';
 
@@ -15,6 +16,13 @@ export function DashboardPage({
   onConnectAnother,
   isEmpty = false,
 }: DashboardPageProps) {
+  const [isConfirmed, setConfirmed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowDimensions, setWindowDimensions] = useState(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+
   const parseDate = (dateString: string) => {
     // Extract date from "Ordered on July 22, 2024" format
     const match = dateString.match(/Ordered on (.+)/);
@@ -48,6 +56,37 @@ export function DashboardPage({
       {} as Record<string, Book[]>
     );
   }, [orders]);
+
+  const onConfirmClicked = () => {
+    setConfirmed(true);
+    setShowConfetti(true);
+  };
+
+  useEffect(() => {
+    let confettiTimer: NodeJS.Timeout;
+    if (showConfetti) {
+      confettiTimer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 10 * 1000); // 10 seconds
+    }
+    return () => {
+      if (confettiTimer) {
+        clearTimeout(confettiTimer);
+      }
+    };
+  }, [showConfetti]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const renderBookCard = (order: Book, index: number) => {
     const addedDate =
@@ -136,6 +175,15 @@ export function DashboardPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {showConfetti && (
+        <ReactConfetti
+          width={windowDimensions.width}
+          height={windowDimensions.height}
+          recycle={true}
+          numberOfPieces={500}
+          gravity={0.1}
+        />
+      )}
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8 text-center">
@@ -147,15 +195,27 @@ export function DashboardPage({
           </h1>
 
           {/* Confirmation Section */}
-          {!isEmpty && (
+          {!isEmpty && !isConfirmed && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
               <p className="text-blue-700 mb-4">
                 Almost there! Confirm sharing your reading list below with
                 PageTurner to claim your $50
               </p>
-              <button className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 transition-colors">
+              <button
+                onClick={onConfirmClicked}
+                className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700 transition-colors"
+              >
                 Confirm
               </button>
+            </div>
+          )}
+
+          {/* Success Section */}
+          {!isEmpty && isConfirmed && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+              <p className="text-green-700 font-medium">
+                Please check your email to redeem the $50 store credit.
+              </p>
             </div>
           )}
 
