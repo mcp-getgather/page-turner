@@ -12,9 +12,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - run: docker build -t circuit-shack .
+      - run: docker build -t page-turner .
 
-      - run: docker run -p 3001:3001 --name circuit-shack -d circuit-shack
+      - run: docker run -p 3001:3001 --name page-turner -d page-turner
         timeout-minutes: 3
 
       - name: Run the health check validation
@@ -22,5 +22,5 @@ jobs:
         timeout-minutes: 3
 
       - name: Get the container logs
-        run: docker logs --details circuit-shack
+        run: docker logs --details page-turner
         if: always()
