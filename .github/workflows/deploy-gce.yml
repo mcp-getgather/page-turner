@@ -5,9 +5,6 @@ on:
   push:
     branches:
       - page-turner
-  pull_request:
-    branches:
-      - page-turner
 
 jobs:
   deploy:
