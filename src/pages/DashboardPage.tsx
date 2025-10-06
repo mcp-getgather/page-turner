@@ -45,7 +45,7 @@ export function DashboardPage({
   };
 
   const shelvingBooks: Record<string, Book[]> = useMemo(() => {
-    return orders.reduce(
+    const grouped = orders.reduce(
       (acc, book) => {
         acc[parseShelfName(book.shelf)] = [
           ...(acc[parseShelfName(book.shelf)] || []),
@@ -55,6 +55,20 @@ export function DashboardPage({
       },
       {} as Record<string, Book[]>
     );
+
+    // Sort shelves to ensure "Currently Reading" and "Wish to Read" appear first
+    const priorityShelves = ['Currently Reading', 'Wish to Read'];
+    const sortedEntries = Object.entries(grouped).sort(([shelfA], [shelfB]) => {
+      const indexA = priorityShelves.indexOf(shelfA);
+      const indexB = priorityShelves.indexOf(shelfB);
+
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return 0;
+    });
+
+    return Object.fromEntries(sortedEntries);
   }, [orders]);
 
   const onConfirmClicked = () => {
