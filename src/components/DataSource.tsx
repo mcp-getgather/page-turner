@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { BrandConfig } from '../modules/Config';
 import { transformData, type Book } from '../modules/DataTransformSchema';
 import { apiClient } from '../api';
@@ -26,6 +26,34 @@ export function DataSource({
   onAuthComplete,
 }: DataSourceProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const isUrlOpened = useRef(false);
+  const [signinData, setSigninData] = useState<
+    | {
+        url: string;
+        signin_id: string;
+      }
+    | undefined
+  >(undefined);
+
+  const fetchBookList = async () => {
+    const response = await apiClient.getBookList();
+    await fetch(response.url, {
+      method: 'POST',
+    });
+    setSigninData(response as { url: string; signin_id: string });
+  };
+
+  useEffect(() => {
+    fetchBookList();
+  }, []);
+
+  useEffect(() => {
+    if (!isUrlOpened.current && isLoading && signinData) {
+      isUrlOpened.current = true;
+      handleAuthentication(signinData);
+      onConnectStart?.();
+    }
+  }, [isLoading, signinData]);
 
   const handleSuccessConnect = (data: unknown) => {
     const transformedData = transformData(data, brandConfig.dataTransform);
@@ -78,10 +106,15 @@ export function DataSource({
 
   const handleConnect = async () => {
     setIsLoading(true);
+    if (!signinData || isUrlOpened.current) {
+      return;
+    }
+
+    isUrlOpened.current = true;
     onConnectStart?.();
 
     try {
-      const structuredContent = await apiClient.getBookList();
+      const structuredContent = signinData;
       console.log('Structured content:', structuredContent);
       await handleAuthentication(structuredContent);
     } catch (error) {

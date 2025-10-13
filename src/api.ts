@@ -7,8 +7,8 @@ type ApiResponse<T> = {
 };
 
 type GetBookListResponse = {
-  url?: string;
-  signin_id?: string;
+  url: string;
+  signin_id: string;
 };
 
 type PollAuthResponse = {
