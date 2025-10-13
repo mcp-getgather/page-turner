@@ -113,33 +113,6 @@ app.post('/api/get-book-list', async (req, res) => {
       success: false,
       error: 'No signin URL found',
     });
-
-    // readingLists.push(
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   (structuredContent as any)?.[goodreadsConfig.dataTransform.dataPath] || []
-    // );
-
-    // const result = await callToolWithReconnect({
-    //   name: `goodreads_get_book_list`,
-    //   sessionId: req.sessionID,
-    //   ipAddress: getClientIp(req),
-    // });
-
-    // readingLists.push(
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   (result.structuredContent as any)?.[
-    //     goodreadsConfig.dataTransform.dataPath
-    //   ] || []
-    // );
-
-    // const combinedStructuredContent = {
-    //   [goodreadsConfig.dataTransform.dataPath]: readingLists.flat(),
-    // };
-
-    // res.json({
-    //   success: true,
-    //   data: combinedStructuredContent,
-    // });
   } catch (error) {
     Logger.error('Get book list error:', error as Error, {
       req: req.toString(),
