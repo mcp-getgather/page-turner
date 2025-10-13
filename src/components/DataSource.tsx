@@ -26,7 +26,6 @@ export function DataSource({
   onAuthComplete,
 }: DataSourceProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const isUrlOpened = useRef(false);
   const [signinData, setSigninData] = useState<
     | {
         url: string;
@@ -34,6 +33,8 @@ export function DataSource({
       }
     | undefined
   >(undefined);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const fetchBookList = async () => {
     const response = await apiClient.getBookList();
@@ -47,12 +48,45 @@ export function DataSource({
     fetchBookList();
   }, []);
 
-  useEffect(() => {
-    if (!isUrlOpened.current && isLoading && signinData) {
-      isUrlOpened.current = true;
-      handleConnect();
+  const submitLoginForm = () => {
+    if (!signinData) {
+      return;
     }
-  }, [isLoading, signinData]);
+
+    fetch(signinData.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        email,
+        password,
+      }),
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        const isFailedSignin = data.includes(
+          '<title>Goodreads Sign In</title>'
+        );
+
+        if (isFailedSignin) {
+          window.open(
+            signinData.url,
+            '_blank',
+            'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
+          );
+        }
+      })
+      .catch((error) => console.error('Error:', error));
+    handleConnect();
+  };
+
+  useEffect(() => {
+    if (isLoading && signinData && email && password) {
+      setIsLoading(false);
+      submitLoginForm();
+    }
+  }, [isLoading, signinData, email, password]);
 
   const handleSuccessConnect = (data: unknown) => {
     const transformedData = transformData(data, brandConfig.dataTransform);
@@ -65,16 +99,9 @@ export function DataSource({
     url?: string;
     signin_id?: string;
   }) => {
-    window.open(
-      structuredContent.url,
-      '_blank',
-      'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
-    );
-
     if (!structuredContent.signin_id) {
       throw new Error('No Signin ID received');
     }
-
     let pollAuthResult;
     while (true) {
       try {
@@ -132,7 +159,7 @@ export function DataSource({
   return (
     <>
       <div className="bg-white p-6 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8">
               <img
@@ -143,12 +170,9 @@ export function DataSource({
             </div>
             <div>
               <h3 className="font-medium">{brandConfig.brand_name}</h3>
-              {brandConfig.is_mandatory && (
-                <span className="text-xs text-gray-500">Required</span>
-              )}
             </div>
           </div>
-          {isConnected ? (
+          {isConnected && (
             <div className="px-4 py-2 flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -169,20 +193,60 @@ export function DataSource({
                 Connected
               </span>
             </div>
-          ) : (
+          )}
+        </div>
+
+        {!isConnected && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={disabled || isLoading}
+                placeholder="Enter your email"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={disabled || isLoading}
+                placeholder="Enter your password"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+
             <button
-              disabled={disabled}
+              disabled={disabled || !email || !password || isLoading}
               onClick={() => setIsLoading(true)}
-              className={`px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
-                disabled || isConnected || isLoading
+              className={`w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
+                disabled || !email || !password || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
               }`}
             >
               {isLoading ? 'Connecting...' : 'Connect'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );
