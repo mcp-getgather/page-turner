@@ -50,8 +50,7 @@ export function DataSource({
   useEffect(() => {
     if (!isUrlOpened.current && isLoading && signinData) {
       isUrlOpened.current = true;
-      handleAuthentication(signinData);
-      onConnectStart?.();
+      handleConnect();
     }
   }, [isLoading, signinData]);
 
@@ -105,18 +104,12 @@ export function DataSource({
   };
 
   const handleConnect = async () => {
-    setIsLoading(true);
-    if (!signinData || isUrlOpened.current) {
+    if (!signinData) {
       return;
     }
-
-    isUrlOpened.current = true;
     onConnectStart?.();
-
     try {
-      const structuredContent = signinData;
-      console.log('Structured content:', structuredContent);
-      await handleAuthentication(structuredContent);
+      handleAuthentication(signinData);
     } catch (error) {
       console.error('Connection error:', error);
       Sentry.captureException(error, {
@@ -179,7 +172,7 @@ export function DataSource({
           ) : (
             <button
               disabled={disabled}
-              onClick={handleConnect}
+              onClick={() => setIsLoading(true)}
               className={`px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
                 disabled || isConnected || isLoading
                   ? 'opacity-50 cursor-not-allowed'
