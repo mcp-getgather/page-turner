@@ -8,11 +8,12 @@ type ApiResponse<T> = {
 
 type GetBookListResponse = {
   url?: string;
-  link_id?: string;
+  signin_id?: string;
 };
 
 type PollAuthResponse = {
   status?: string;
+  data?: unknown;
 };
 
 export class ApiClient {
@@ -55,10 +56,10 @@ export class ApiClient {
     });
   }
 
-  async pollAuth(sessionId: string): Promise<PollAuthResponse> {
+  async pollSignin(signinId: string): Promise<PollAuthResponse> {
     return this.request<PollAuthResponse>('/poll-signin', {
       method: 'POST',
-      body: JSON.stringify({ link_id: sessionId }),
+      body: JSON.stringify({ signin_id: signinId }),
     });
   }
 }

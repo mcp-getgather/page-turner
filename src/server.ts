@@ -28,8 +28,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const KEYWORDS: string[] = [];
-
 function getAppHost(req: express.Request): string {
   // If APP_HOST is explicitly set, use it
   if (process.env.APP_HOST) {
@@ -83,19 +81,15 @@ app.get('/health', (req, res) => {
 // API Routes
 app.post('/api/get-book-list', async (req, res) => {
   try {
-    const { keywords = KEYWORDS } = req.body;
-    const readingLists = [];
-
     const result = await callToolWithReconnect({
       name: 'goodreads_get_book_list',
-      arguments: { keyword: keywords[0] },
       sessionId: req.sessionID,
       ipAddress: getClientIp(req),
     });
 
     const structuredContent = result.structuredContent as {
       url?: string;
-      link_id?: string;
+      signin_id?: string;
       [goodreadsConfig.dataTransform.dataPath]: unknown;
     };
 
@@ -105,43 +99,47 @@ app.post('/api/get-book-list', async (req, res) => {
         settings.GETGATHER_URL,
         `${appHost}`
       );
-      structuredContent.url = proxyPath;
 
       return res.json({
         success: true,
-        data: structuredContent,
+        data: {
+          url: proxyPath,
+          signin_id: structuredContent.signin_id,
+        },
       });
     }
 
-    readingLists.push(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (structuredContent as any)?.[goodreadsConfig.dataTransform.dataPath] || []
-    );
-
-    for (const keyword of keywords.slice(1)) {
-      const result = await callToolWithReconnect({
-        name: `goodreads_get_book_list`,
-        arguments: { keyword },
-        sessionId: req.sessionID,
-        ipAddress: getClientIp(req),
-      });
-
-      readingLists.push(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (result.structuredContent as any)?.[
-          goodreadsConfig.dataTransform.dataPath
-        ] || []
-      );
-    }
-
-    const combinedStructuredContent = {
-      [goodreadsConfig.dataTransform.dataPath]: readingLists.flat(),
-    };
-
-    res.json({
-      success: true,
-      data: combinedStructuredContent,
+    return res.json({
+      success: false,
+      error: 'No signin URL found',
     });
+
+    // readingLists.push(
+    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   (structuredContent as any)?.[goodreadsConfig.dataTransform.dataPath] || []
+    // );
+
+    // const result = await callToolWithReconnect({
+    //   name: `goodreads_get_book_list`,
+    //   sessionId: req.sessionID,
+    //   ipAddress: getClientIp(req),
+    // });
+
+    // readingLists.push(
+    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   (result.structuredContent as any)?.[
+    //     goodreadsConfig.dataTransform.dataPath
+    //   ] || []
+    // );
+
+    // const combinedStructuredContent = {
+    //   [goodreadsConfig.dataTransform.dataPath]: readingLists.flat(),
+    // };
+
+    // res.json({
+    //   success: true,
+    //   data: combinedStructuredContent,
+    // });
   } catch (error) {
     Logger.error('Get book list error:', error as Error, {
       req: req.toString(),
@@ -155,19 +153,19 @@ app.post('/api/get-book-list', async (req, res) => {
 
 app.post('/api/poll-signin', async (req, res) => {
   try {
-    const { link_id } = req.body;
+    const { signin_id } = req.body;
 
-    if (!link_id) {
+    if (!signin_id) {
       return res.status(400).json({
         success: false,
-        error: 'link_id is required',
+        error: 'signin_id is required',
       });
     }
 
     const result = await callToolWithReconnect(
       {
-        name: 'poll_signin',
-        arguments: { link_id },
+        name: 'check_signin',
+        arguments: { signin_id },
         sessionId: req.sessionID,
         ipAddress: getClientIp(req),
       },
@@ -180,11 +178,25 @@ app.post('/api/poll-signin', async (req, res) => {
 
     const structuredContent = result.structuredContent as {
       status?: string;
+      message?: string;
+      result?: Array<{
+        title: string;
+        author: string;
+        rating: string;
+        url: string;
+        cover: string;
+        shelf: string;
+        added_date: string;
+      }>;
     };
 
     res.json({
       success: true,
-      data: structuredContent,
+      data: {
+        status: structuredContent.status,
+        message: structuredContent.message,
+        [goodreadsConfig.dataTransform.dataPath]: structuredContent.result,
+      },
     });
   } catch (error) {
     Logger.error('Poll auth error:', error as Error, { req: req.toString() });
@@ -217,6 +229,7 @@ const createProxy = (path: string) =>
 const proxyPaths = [
   '/auth',
   '/link',
+  '/dpage',
   '/assets',
   '/static',
   '/__assets',

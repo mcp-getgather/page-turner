@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import type { BrandConfig } from '../modules/Config';
-import {
-  transformData,
-  type Book,
-} from '../modules/DataTransformSchema';
+import { transformData, type Book } from '../modules/DataTransformSchema';
 import { apiClient } from '../api';
 import * as Sentry from '@sentry/react';
 
@@ -39,7 +36,7 @@ export function DataSource({
 
   const handleAuthentication = async (structuredContent: {
     url?: string;
-    link_id?: string;
+    signin_id?: string;
   }) => {
     window.open(
       structuredContent.url,
@@ -47,17 +44,18 @@ export function DataSource({
       'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
     );
 
-    if (!structuredContent.link_id) {
-      throw new Error('No session ID received');
+    if (!structuredContent.signin_id) {
+      throw new Error('No Signin ID received');
     }
 
+    let pollAuthResult;
     while (true) {
       try {
-        const pollAuthResult = await apiClient.pollAuth(
-          structuredContent.link_id
+        pollAuthResult = await apiClient.pollSignin(
+          structuredContent.signin_id
         );
         console.log('Result poll auth:', pollAuthResult);
-        if (pollAuthResult?.status === 'FINISHED') {
+        if (pollAuthResult?.status === 'SUCCESS') {
           break;
         }
       } catch (error) {
@@ -73,34 +71,9 @@ export function DataSource({
     }
 
     onAuthComplete?.();
-    await loadBookData();
-  };
-
-  // NOTE: temporary solution until we fix in the mcp, related to https://github.com/mcp-getgather/mcp-getgather/pull/411/files#diff-6c7ad2429ff4f85d533ff32dc0d8328605a8dc6d12d47b8eb9d7351b3626362cR421
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  const extractBookListFromResponse = (
-    structuredContent: Record<string, any>
-  ) => {
-    const bookList =
-      structuredContent[brandConfig.dataTransform.dataPath]?.[0]?.terminated !=
-      null
-        ? structuredContent[brandConfig.dataTransform.dataPath]?.[0]?.result
-        : structuredContent[brandConfig.dataTransform.dataPath];
-    return {
-      ...structuredContent,
-      [brandConfig.dataTransform.dataPath]: bookList,
-    };
-  };
-
-  const loadBookData = async () => {
-    // Start data loading - step 3
     onProgressStep?.(3);
-
-    const structuredContent = await apiClient.getBookList();
-    console.log('Structured content (after auth):', structuredContent);
-
     setIsLoading(false);
-    handleSuccessConnect(extractBookListFromResponse(structuredContent));
+    handleSuccessConnect(pollAuthResult);
   };
 
   const handleConnect = async () => {
@@ -110,13 +83,7 @@ export function DataSource({
     try {
       const structuredContent = await apiClient.getBookList();
       console.log('Structured content:', structuredContent);
-
-      if (structuredContent.url) {
-        await handleAuthentication(structuredContent);
-      } else {
-        setIsLoading(false);
-        handleSuccessConnect(extractBookListFromResponse(structuredContent));
-      }
+      await handleAuthentication(structuredContent);
     } catch (error) {
       console.error('Connection error:', error);
       Sentry.captureException(error, {
