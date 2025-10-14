@@ -35,6 +35,7 @@ export function DataSource({
   >(undefined);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const isLoaded = useRef(false);
 
   const fetchBookList = async () => {
     const response = await apiClient.getBookList();
@@ -45,8 +46,11 @@ export function DataSource({
   };
 
   useEffect(() => {
-    fetchBookList();
-  }, []);
+    if (email && !isLoaded.current) {
+      fetchBookList();
+      isLoaded.current = true;
+    }
+  }, [email]);
 
   const submitLoginForm = () => {
     if (!signinData) {
