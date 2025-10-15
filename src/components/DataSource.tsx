@@ -13,6 +13,8 @@ interface DataSourceProps {
   brandConfig: BrandConfig;
   isConnected?: boolean;
   onAuthComplete?: () => void;
+  onRetryConnection?: (url?: string) => void;
+  signinUrl?: string;
 }
 
 export function DataSource({
@@ -24,7 +26,10 @@ export function DataSource({
   brandConfig,
   isConnected,
   onAuthComplete,
+  onRetryConnection,
+  signinUrl: signinUrlProp,
 }: DataSourceProps) {
+  const signinUrl = signinUrlProp?.replace('3001', '5174');
   const [isLoading, setIsLoading] = useState(false);
   const [signinData, setSigninData] = useState<
     | {
@@ -74,15 +79,11 @@ export function DataSource({
         );
 
         if (isFailedSignin) {
-          window.open(
-            signinData.url,
-            '_blank',
-            'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
-          );
+          onRetryConnection?.(signinData.url);
         }
       })
       .catch((error) => console.error('Error:', error));
-    handleConnect();
+    handleConnect(signinData);
   };
 
   useEffect(() => {
@@ -134,7 +135,10 @@ export function DataSource({
     handleSuccessConnect(pollAuthResult);
   };
 
-  const handleConnect = async () => {
+  const handleConnect = async (signinData: {
+    url: string;
+    signin_id: string;
+  }) => {
     if (!signinData) {
       return;
     }
@@ -159,6 +163,61 @@ export function DataSource({
       onConnectionError?.(errorMessage);
     }
   };
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    const onLoad = () => {
+      try {
+        const iframeDoc =
+          iframe.contentDocument || iframe.contentWindow?.document;
+        const style = iframeDoc?.createElement('style');
+        if (!style) return;
+        style.textContent = `
+            body { background-color: #eef5ff !important; }
+          `;
+        iframeDoc?.head.appendChild(style);
+      } catch (err) {
+        console.warn('Cannot access iframe — likely cross-origin:', err);
+      }
+    };
+
+    iframe.addEventListener('load', onLoad);
+    return () => iframe.removeEventListener('load', onLoad);
+  }, [signinUrl]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const iframeDoc =
+        iframeRef.current?.contentDocument ||
+        iframeRef.current?.contentWindow?.document;
+      if (!iframeDoc) return;
+
+      const text = iframeDoc.body?.innerText || '';
+      if (
+        text.includes('Finished! You can close this window now') &&
+        signinUrl
+      ) {
+        handleConnect({
+          signin_id: signinUrl.split('/').filter(Boolean).pop() ?? '',
+          url: signinUrl,
+        });
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (signinUrl) {
+    return (
+      <div>
+        <iframe ref={iframeRef} src={signinUrl} className="w-full h-[380px]" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -200,7 +259,7 @@ export function DataSource({
           )}
         </div>
 
-        {!isConnected && (
+        {!isConnected && !signinUrl && (
           <div className="space-y-4">
             <div className="space-y-2">
               <label

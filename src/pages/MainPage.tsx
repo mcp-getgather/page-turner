@@ -20,12 +20,14 @@ type ConnectionAction =
   | { type: 'CONNECTION_SUCCESS'; data: PurchaseHistory[] }
   | { type: 'CONNECTION_ERROR'; error: string }
   | { type: 'RETRY_CONNECTION' }
-  | { type: 'RESET_TO_INITIAL' };
+  | { type: 'RESET_TO_INITIAL' }
+  | { type: 'RETRY_CONNECTION_WTH_SIGNIN_URL'; url: string };
 
 type ConnectionStateData = {
   state: ConnectionState;
   orders: PurchaseHistory[];
   currentLoadingStep: number;
+  signinUrl?: string;
   error: {
     title?: string;
     message?: string;
@@ -97,6 +99,16 @@ const connectionReducer = (
         error: null,
       };
 
+    case 'RETRY_CONNECTION_WTH_SIGNIN_URL':
+      return {
+        ...state,
+        state: 'INITIAL',
+        error: null,
+        orders: [],
+        currentLoadingStep: 0,
+        signinUrl: action.url,
+      };
+
     default:
       return state;
   }
@@ -139,8 +151,12 @@ export function MainPage() {
     dispatch({ type: 'CONNECTION_ERROR', error: errorDetails });
   };
 
-  const handleRetry = () => {
-    dispatch({ type: 'RETRY_CONNECTION' });
+  const handleRetry = (url?: string) => {
+    if (url) {
+      dispatch({ type: 'RETRY_CONNECTION_WTH_SIGNIN_URL', url });
+    } else {
+      dispatch({ type: 'RETRY_CONNECTION' });
+    }
   };
 
   const handleGoHome = () => {
@@ -176,6 +192,8 @@ export function MainPage() {
           onProgressStep={progressToStep}
           onAuthComplete={handleAuthComplete}
           isConnecting={false}
+          onRetryConnection={handleRetry}
+          signinUrl={connectionState.signinUrl}
         />
       );
 
