@@ -47,6 +47,8 @@ export function DataSource({
 
     const fetchBookList = async () => {
       const response = await apiClient.getBookList();
+      // When user start typing email, call the dpage URL to trigger the initial process (e.g., launch the browser and open the Goodreads sign-in page)
+      // This results in a faster response since we don’t need to start the entire process from the beginning when user submit the form.
       await fetch(response.url, { method: 'POST' });
       setSigninData(response as SigninData);
     };
