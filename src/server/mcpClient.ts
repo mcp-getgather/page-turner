@@ -35,7 +35,6 @@ async function initializeMcpClient(
           'x-getgather-custom-app': 'page-turner',
           'x-location': location ? JSON.stringify(location) : '',
           'x-incognito': '1',
-          'x-skip-result-check': '1',
         },
       },
     });
