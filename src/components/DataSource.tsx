@@ -40,6 +40,7 @@ export function DataSource({
   >(undefined);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const isLoaded = useRef(false);
 
   const fetchBookList = async () => {
@@ -167,9 +168,14 @@ export function DataSource({
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
+    setIsIframeLoaded(false);
+  }, [signinUrl]);
+
+  useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
     const onLoad = () => {
+      setIsIframeLoaded(true);
       try {
         const iframeDoc =
           iframe.contentDocument || iframe.contentWindow?.document;
@@ -213,8 +219,22 @@ export function DataSource({
 
   if (signinUrl) {
     return (
-      <div>
-        <iframe ref={iframeRef} src={signinUrl} className="w-full h-[380px]" />
+      <div className="relative">
+        {!isIframeLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white rounded-xl border border-gray-200 h-[380px]">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <p className="text-sm text-gray-500">Loading...</p>
+            </div>
+          </div>
+        )}
+        <iframe
+          ref={iframeRef}
+          src={signinUrl}
+          className={`w-full h-[380px] rounded-xl ${
+            isIframeLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
       </div>
     );
   }
