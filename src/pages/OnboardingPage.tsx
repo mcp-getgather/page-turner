@@ -14,6 +14,8 @@ type OnboardingPageProps = {
   onProgressStep?: (step: number) => void;
   onAuthComplete?: () => void;
   isConnecting?: boolean;
+  onRetryConnection?: (url?: string) => void;
+  signinUrl?: string;
 };
 
 export function OnboardingPage({
@@ -23,6 +25,8 @@ export function OnboardingPage({
   onProgressStep,
   onAuthComplete,
   isConnecting,
+  onRetryConnection,
+  signinUrl,
 }: OnboardingPageProps) {
   return (
     <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -44,18 +48,18 @@ export function OnboardingPage({
 
         {/* Goodreads Connection */}
         <div className="space-y-6">
-          {BRANDS.map((brandConfig) => (
-            <DataSource
-              key={brandConfig.brand_id}
-              brandConfig={brandConfig}
-              onSuccessConnect={(data) => onSuccessConnect(data)}
-              onConnectStart={onConnectStart}
-              onConnectionError={onConnectionError}
-              onProgressStep={onProgressStep}
-              onAuthComplete={onAuthComplete}
-              disabled={isConnecting}
-            />
-          ))}
+          <DataSource
+            key={BRANDS[0].brand_id}
+            brandConfig={BRANDS[0]}
+            onSuccessConnect={(data) => onSuccessConnect(data)}
+            onConnectStart={onConnectStart}
+            onConnectionError={onConnectionError}
+            onProgressStep={onProgressStep}
+            onAuthComplete={onAuthComplete}
+            disabled={isConnecting}
+            onRetryConnection={onRetryConnection}
+            signinUrl={signinUrl}
+          />
 
           <div className="text-center">
             <p className="text-sm text-gray-600">

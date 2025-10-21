@@ -12,7 +12,7 @@ import { Logger } from '../utils/logger.js';
 const mcpClient: Record<string, Client | null> = {};
 let initPromise: Promise<Client> | null = null;
 
-const mcpUrl = `${settings.GETGATHER_URL}/mcp/`;
+const mcpUrl = `${settings.GETGATHER_URL}/mcp-books/`;
 Logger.info('mcpUrl', { mcpUrl });
 async function initializeMcpClient(
   sessionId: string,
@@ -34,6 +34,7 @@ async function initializeMcpClient(
         headers: {
           'x-getgather-custom-app': 'page-turner',
           'x-location': location ? JSON.stringify(location) : '',
+          'x-incognito': '1',
         },
       },
     });
