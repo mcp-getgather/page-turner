@@ -43,7 +43,7 @@ export function DataSource({
   const hasRequestedBookList = useRef(false);
 
   useEffect(() => {
-    if (!email || hasRequestedBookList.current) return;
+    if (!email || !email.includes('@') || hasRequestedBookList.current) return;
 
     const fetchBookList = async () => {
       const response = await apiClient.getBookList();
