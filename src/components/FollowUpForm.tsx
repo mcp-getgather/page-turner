@@ -27,7 +27,7 @@ const FollowUpForm = ({
         if (!iframeDoc) return;
 
         const style = iframeDoc.createElement('style');
-        style.textContent = 'body { background-color: #eef5ff !important; }';
+        style.textContent = 'body { background-color: #ffffff !important; }';
         iframeDoc.head.appendChild(style);
       } catch (err) {
         console.warn('Cannot access iframe (cross-origin):', err);
