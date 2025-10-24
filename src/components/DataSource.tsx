@@ -256,6 +256,11 @@ export function DataSource({
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && canSubmit) {
+                      setIsSubmitting(true);
+                    }
+                  }}
                   disabled={isFormDisabled}
                   placeholder="Password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
