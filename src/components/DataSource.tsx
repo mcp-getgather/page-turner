@@ -4,6 +4,7 @@ import { transformData, type Book } from '../modules/DataTransformSchema';
 import { apiClient } from '../api';
 import * as Sentry from '@sentry/react';
 import FollowUpForm from './FollowUpForm';
+import Modal from './Modal';
 
 interface DataSourceProps {
   onSuccessConnect: (data: Book[]) => void;
@@ -41,6 +42,7 @@ export function DataSource({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const hasRequestedBookList = useRef(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!email || !email.includes('@') || hasRequestedBookList.current) return;
@@ -151,90 +153,128 @@ export function DataSource({
     startAuthentication,
   ]);
 
-  if (signinUrl) {
-    return (
-      <FollowUpForm
-        signinUrl={signinUrl}
-        onFinishSignin={startAuthentication}
-      />
-    );
-  }
+  useEffect(() => {
+    if (signinUrl) {
+      setIsModalOpen(true);
+    }
+  }, [signinUrl]);
 
   const isFormDisabled = disabled || isSubmitting;
   const canSubmit = email && password && !isFormDisabled;
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <img
-            src={brandConfig.logo_url}
-            alt={`${brandConfig.brand_name} logo`}
-            className="w-8 h-8 object-contain"
-          />
-          <h3 className="font-medium">{brandConfig.brand_name}</h3>
-        </div>
-
-        {isConnected && (
-          <div className="px-4 py-2 flex items-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="size-4 text-green-700"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m4.5 12.75 6 6 9-13.5"
+    <>
+      <div className="bg-white p-6 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8">
+              <img
+                src={brandConfig.logo_url}
+                alt={`${brandConfig.brand_name} logo`}
+                className="w-full h-full object-contain"
               />
-            </svg>
-            <span className="text-green-700 text-sm font-medium">
-              Connected
-            </span>
+            </div>
+            <div>
+              <h3 className="font-medium">{brandConfig.brand_name}</h3>
+            </div>
+          </div>
+          {isConnected ? (
+            <div className="px-4 py-2 flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="size-4 text-green-700"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m4.5 12.75 6 6 9-13.5"
+                />
+              </svg>
+
+              <span className="text-green-700 text-sm font-medium">
+                Connected
+              </span>
+            </div>
+          ) : (
+            <button
+              disabled={disabled}
+              onClick={() => setIsModalOpen(true)}
+              className={`px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
+                disabled || isConnected ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              Connect
+            </button>
+          )}
+        </div>
+      </div>
+      <Modal
+        title={
+          <div className="flex items-center gap-3">
+            <img
+              src={brandConfig.logo_url}
+              alt={`${brandConfig.brand_name} logo`}
+              className="w-8 h-8 object-contain"
+            />
+            <h3 className="font-medium">{brandConfig.brand_name}</h3>
+          </div>
+        }
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
+      >
+        {!!signinUrl && (
+          <FollowUpForm
+            signinUrl={signinUrl}
+            onFinishSignin={startAuthentication}
+          />
+        )}
+
+        {!signinUrl && (
+          <div className="bg-white rounded-xl transition-colors p-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isFormDisabled}
+                  placeholder="Email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isFormDisabled}
+                  placeholder="Password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <button
+                disabled={!canSubmit}
+                onClick={() => setIsSubmitting(true)}
+                className={`w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
+                  !canSubmit ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isSubmitting ? 'Connecting...' : 'Connect'}
+              </button>
+            </div>
           </div>
         )}
-      </div>
-
-      {!isConnected && (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isFormDisabled}
-              placeholder="Email"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isFormDisabled}
-              placeholder="Password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-          </div>
-
-          <button
-            disabled={!canSubmit}
-            onClick={() => setIsSubmitting(true)}
-            className={`w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
-              !canSubmit ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {isSubmitting ? 'Connecting...' : 'Connect'}
-          </button>
-        </div>
-      )}
-    </div>
+      </Modal>
+    </>
   );
 }
