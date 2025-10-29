@@ -97,6 +97,7 @@ export function DataSource({
         onProgressStep?.(3);
         setIsSubmitting(false);
         onSuccessConnect(transformedData as unknown as Book[]);
+        apiClient.finalizeSignin(signinId);
       } catch (error) {
         console.error('Connection error:', error);
         Sentry.captureException(error, {

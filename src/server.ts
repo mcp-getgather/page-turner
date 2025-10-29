@@ -180,6 +180,45 @@ app.post('/api/poll-signin', async (req, res) => {
   }
 });
 
+app.post('/api/finalize-signin', async (req, res) => {
+  try {
+    const { signin_id } = req.body;
+
+    if (!signin_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'signin_id is required',
+      });
+    }
+
+    await callToolWithReconnect(
+      {
+        name: 'finalize_signin',
+        arguments: { signin_id },
+        sessionId: req.sessionID,
+        ipAddress: getClientIp(req),
+      },
+      undefined,
+      {
+        timeout: 6000000,
+        maxTotalTimeout: 6000000,
+      }
+    );
+
+    res.json({
+      success: true,
+    });
+  } catch (error) {
+    Logger.error('Finalize signin error:', error as Error, {
+      req: req.toString(),
+    });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
 const createProxy = (path: string) =>
   createProxyMiddleware({
     target: `${settings.GETGATHER_URL}${path}`,
