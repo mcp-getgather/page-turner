@@ -62,6 +62,13 @@ export class ApiClient {
       body: JSON.stringify({ signin_id: signinId }),
     });
   }
+
+  async finalizeSignin(signinId: string): Promise<void> {
+    return this.request<void>('/finalize-signin', {
+      method: 'POST',
+      body: JSON.stringify({ signin_id: signinId }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
