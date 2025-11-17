@@ -32,7 +32,7 @@ async function initializeMcpClient(
     const transport = new StreamableHTTPClientTransport(new URL(mcpUrl), {
       requestInit: {
         headers: {
-          Authorization: `Bearer ${settings.GETGATHER_APP_ID}_${sessionId}`,
+          Authorization: `Bearer ${settings.GETGATHER_APP_KEY}_${sessionId}`,
           'x-getgather-custom-app': 'page-turner',
           'x-location': location ? JSON.stringify(location) : '',
           'x-incognito': '1',
