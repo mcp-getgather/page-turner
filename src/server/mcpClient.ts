@@ -5,9 +5,9 @@ import {
   CallToolResultSchema,
   CompatibilityCallToolResultSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { Logger } from '../utils/logger.js';
 import { settings } from './config.js';
 import { getLocation } from './locationService.js';
-import { Logger } from '../utils/logger.js';
 
 const mcpClient: Record<string, Client | null> = {};
 let initPromise: Promise<Client> | null = null;
@@ -32,6 +32,7 @@ async function initializeMcpClient(
     const transport = new StreamableHTTPClientTransport(new URL(mcpUrl), {
       requestInit: {
         headers: {
+          Authorization: `Bearer ${settings.GETGATHER_APP_KEY}_${sessionId}`,
           'x-getgather-custom-app': 'page-turner',
           'x-location': location ? JSON.stringify(location) : '',
           'x-incognito': '1',
