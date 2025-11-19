@@ -15,6 +15,9 @@ import { BrandConfig } from './modules/Config';
 import { createRequire } from 'module';
 import * as Sentry from '@sentry/node';
 import { Logger } from './utils/logger.js';
+import { customAlphabet } from 'nanoid';
+const genSessionId = () =>
+  customAlphabet('23456789abcdefghijkmnpqrstuvwxyz', 8)();
 
 dotenv.config();
 
@@ -49,6 +52,7 @@ app.use(express.json());
 app.use(
   session({
     secret: '1234567890',
+    genid: genSessionId,
     resave: false,
     saveUninitialized: false,
     cookie: {
